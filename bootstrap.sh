@@ -4,10 +4,6 @@ sudo debconf-set-selections <<< 'mysql-server-5.5 mysql-server/root_password pas
 sudo debconf-set-selections <<< 'mysql-server-5.5 mysql-server/root_password_again password password'
 sudo apt-get update
 sudo apt-get -y install mysql-server-5.5 php5-mysql apache2 php5
-if ! [ -L /var/www ]; then
-  rm -rf /var/www
-  ln -fs /vagrant /var/www
-fi
 
 if [ ! -f /var/log/databasesetup ];
 then
@@ -24,15 +20,13 @@ then
     fi
 fi
 
-if [ ! -h /var/www ]; 
-then 
+if ! [ -h /var/www ]; then
+  rm -rf /var/www
+  ln -fs /vagrant/public /var/www
 
-    rm -rf /var/www sudo 
-    ln -s /vagrant/public /var/www
+  sudo a2enmod rewrite
+  
+  sed -i '/AllowOverride None/c AllowOverride All' /etc/apache2/sites-available/default
 
-    a2enmod rewrite
-
-    sed -i '/AllowOverride None/c AllowOverride All' /etc/apache2/sites-available/default
-
-    service apache2 restart
+  sudo service apache2 restart
 fi
